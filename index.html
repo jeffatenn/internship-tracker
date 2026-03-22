@@ -4,423 +4,95 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Internship Tracker</title>
-
-  <!-- Tabulator CSS -->
   <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet" />
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
   <style>
-    /* ── Design: dark editorial, monospace-meets-sans, mint accent ── */
     :root {
-      --bg:          #0f0f12;
-      --surface:     #18181f;
-      --surface2:    #22222c;
-      --border:      #2e2e3a;
-      --accent:      #56e0a0;
-      --accent-dim:  #1e4d38;
-      --text:        #e8e8f0;
-      --text-muted:  #7070a0;
-      --danger:      #ff6b81;
-      --warn:        #ffd166;
-      --info:        #74b9ff;
-      --offer:       #56e0a0;
-
-      --status-not-applied:  #2e2e3a;
-      --status-applied:      #1a3a5c;
-      --status-interviewing: #3a2e10;
-      --status-offer:        #0e3a28;
-      --status-rejected:     #3a1020;
-      --status-withdrawn:    #28282e;
-
-      --font-body: 'DM Sans', sans-serif;
-      --font-mono: 'DM Mono', monospace;
+      --bg:#0f0f12;--surface:#18181f;--surface2:#22222c;--border:#2e2e3a;
+      --accent:#56e0a0;--accent-dim:#1e4d38;--text:#e8e8f0;--text-muted:#7070a0;
+      --danger:#ff6b81;--warn:#ffd166;--info:#74b9ff;--offer:#56e0a0;
+      --status-not-applied:#2e2e3a;--status-applied:#1a3a5c;
+      --status-interviewing:#3a2e10;--status-offer:#0e3a28;
+      --status-rejected:#3a1020;--status-withdrawn:#28282e;
+      --font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
     }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 14px;
-      min-height: 100vh;
-    }
-
-    /* ── Header ── */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-
-    .logo-title {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--accent);
-      letter-spacing: -0.5px;
-    }
-
-    .logo-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
-
-    /* ── Status pill summary ── */
-    .status-bar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .pill {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    .pill:hover { opacity: 0.85; transform: translateY(-1px); }
-    .pill.active { border-color: var(--accent); }
-    .pill-not-applied  { background: var(--status-not-applied);  color: var(--text-muted); }
-    .pill-applied      { background: var(--status-applied);      color: var(--info); }
-    .pill-interviewing { background: var(--status-interviewing);  color: var(--warn); }
-    .pill-offer        { background: var(--status-offer);         color: var(--offer); }
-    .pill-rejected     { background: var(--status-rejected);      color: var(--danger); }
-    .pill-withdrawn    { background: var(--status-withdrawn);     color: var(--text-muted); }
-
-    /* ── Controls row ── */
-    .controls {
-      padding: 14px 32px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    .search-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 13px;
-      padding: 7px 12px;
-      width: 240px;
-      transition: border-color 0.15s;
-    }
-    .search-box:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .search-box::placeholder { color: var(--text-muted); }
-
-    .btn {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 7px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s;
-      letter-spacing: 0.3px;
-    }
-    .btn:hover { border-color: var(--accent); color: var(--accent); }
-    .btn.primary {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .save-toast {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--accent);
-      opacity: 0;
-      transition: opacity 0.3s;
-      margin-left: auto;
-    }
-    .save-toast.show { opacity: 1; }
-
-    .load-status {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-left: auto;
-    }
-
-    /* ── Tabulator overrides ── */
-    #tracker-table {
-      margin: 0;
-    }
-
-    .tabulator {
-      background: var(--bg) !important;
-      border: none !important;
-      font-family: var(--font-body) !important;
-    }
-
-    .tabulator .tabulator-header {
-      background: var(--surface) !important;
-      border-bottom: 2px solid var(--accent) !important;
-    }
-
-    .tabulator .tabulator-header .tabulator-col {
-      background: var(--surface) !important;
-      border-right: 1px solid var(--border) !important;
-      color: var(--text-muted) !important;
-      font-family: var(--font-mono) !important;
-      font-size: 11px !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.8px !important;
-    }
-
-    .tabulator .tabulator-header .tabulator-col:hover {
-      background: var(--surface2) !important;
-    }
-
-    /* Filter inputs inside header */
-    .tabulator .tabulator-header-filter input,
-    .tabulator .tabulator-header-filter select {
-      background: var(--surface2) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 4px !important;
-      color: var(--text) !important;
-      font-family: var(--font-body) !important;
-      font-size: 12px !important;
-      padding: 3px 6px !important;
-      width: 100% !important;
-    }
-    .tabulator .tabulator-header-filter input:focus,
-    .tabulator .tabulator-header-filter select:focus {
-      outline: none !important;
-      border-color: var(--accent) !important;
-    }
-
-    .tabulator-row {
-      background: var(--surface) !important;
-      border-bottom: 1px solid var(--border) !important;
-      transition: background 0.1s;
-    }
-    .tabulator-row:hover {
-      background: var(--surface2) !important;
-    }
-
-    .tabulator-row .tabulator-cell {
-      border-right: 1px solid var(--border) !important;
-      color: var(--text) !important;
-      font-size: 13px !important;
-      padding: 9px 10px !important;
-      vertical-align: middle !important;
-    }
-
-    /* ── Row status colouring ── */
-    .tabulator-row.row-applied      { background: #111a28 !important; }
-    .tabulator-row.row-interviewing { background: #1c1800 !important; }
-    .tabulator-row.row-offer        { background: #081c14 !important; }
-    .tabulator-row.row-rejected     { background: #1c0810 !important; }
-    .tabulator-row.row-withdrawn    { background: #141418 !important; }
-
-    /* ── Custom cell renderers ── */
-    .status-select {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 6px;
-      width: 100%;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .status-select:focus { outline: none; border-color: var(--accent); }
-    .status-select option { background: var(--surface2); }
-
-    .date-input {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 6px;
-      width: 100%;
-      cursor: pointer;
-    }
-    .date-input:focus { outline: none; border-color: var(--accent); }
-
-    /* Chrome date picker dark mode hack */
-    .date-input::-webkit-calendar-picker-indicator {
-      filter: invert(0.8);
-      cursor: pointer;
-    }
-
-    .notes-input {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 12px;
-      padding: 3px 8px;
-      width: 100%;
-      resize: none;
-    }
-    .notes-input:focus { outline: none; border-color: var(--accent); }
-
-    .apply-link {
-      display: inline-block;
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      border-radius: 5px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 3px 9px;
-      text-decoration: none;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    .apply-link:hover {
-      background: var(--accent);
-      color: var(--bg);
-    }
-
-    .location-tag {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 10px;
-      white-space: nowrap;
-    }
-    .location-tag.remote {
-      background: var(--accent-dim);
-      color: var(--accent);
-    }
-    .location-tag.local {
-      background: #1a2a4a;
-      color: var(--info);
-    }
-
-    /* ── Footer ── */
-    footer {
-      padding: 16px 32px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    /* ── Error banner ── */
-    .error-banner {
-      background: #3a1020;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 10px 32px;
-      display: none;
-    }
-
-    /* ── Loading skeleton ── */
-    .loading-bar {
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      background-size: 200% 100%;
-      animation: shimmer 1.2s infinite;
-    }
-    @keyframes shimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position:  200% 0; }
-    }
-
-    /* ── Scrape button ── */
-    .btn-scrape {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 7px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--accent);
-      background: var(--accent-dim);
-      color: var(--accent);
-      cursor: pointer;
-      letter-spacing: 0.3px;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-scrape:hover {
-      background: var(--accent);
-      color: var(--bg);
-    }
-    .btn-scrape .scrape-icon {
-      display: inline-block;
-      transition: transform 0.3s;
-    }
-    .btn-scrape:hover .scrape-icon {
-      transform: rotate(180deg);
-    }
-    /* pulse ring when scraping is in progress */
-    .btn-scrape.running {
-      animation: pulse-border 1s infinite;
-      pointer-events: none;
-      opacity: 0.7;
-    }
-    @keyframes pulse-border {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(86,224,160,0.4); }
-      50%       { box-shadow: 0 0 0 5px rgba(86,224,160,0); }
-    }
-
-    /* ── Scrape status message ── */
-    .scrape-status {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      display: none;
-    }
-    .scrape-status.show { display: inline; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .logo{display:flex;align-items:baseline;gap:10px}
+    .logo-title{font-family:var(--font-mono);font-size:18px;font-weight:500;color:var(--accent);letter-spacing:-0.5px}
+    .logo-sub{font-size:12px;color:var(--text-muted);font-family:var(--font-mono)}
+    .status-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{font-family:var(--font-mono);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .pill:hover{opacity:.85;transform:translateY(-1px)}
+    .pill.active{border-color:var(--accent)}
+    .pill-not-applied{background:var(--status-not-applied);color:var(--text-muted)}
+    .pill-applied{background:var(--status-applied);color:var(--info)}
+    .pill-interviewing{background:var(--status-interviewing);color:var(--warn)}
+    .pill-offer{background:var(--status-offer);color:var(--offer)}
+    .pill-rejected{background:var(--status-rejected);color:var(--danger)}
+    .pill-withdrawn{background:var(--status-withdrawn);color:var(--text-muted)}
+    .controls{padding:14px 32px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface)}
+    .search-box{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:7px 12px;width:240px;transition:border-color .15s}
+    .search-box:focus{outline:none;border-color:var(--accent)}
+    .search-box::placeholder{color:var(--text-muted)}
+    .btn{font-family:var(--font-mono);font-size:11px;padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all .15s;letter-spacing:.3px}
+    .btn:hover{border-color:var(--accent);color:var(--accent)}
+    .btn.primary{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+    .save-toast{font-family:var(--font-mono);font-size:11px;color:var(--accent);opacity:0;transition:opacity .3s;margin-left:auto}
+    .save-toast.show{opacity:1}
+    .load-status{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-left:auto}
+    #tracker-table{margin:0}
+    .tabulator{background:var(--bg)!important;border:none!important;font-family:var(--font-body)!important}
+    .tabulator .tabulator-header{background:var(--surface)!important;border-bottom:2px solid var(--accent)!important}
+    .tabulator .tabulator-header .tabulator-col{background:var(--surface)!important;border-right:1px solid var(--border)!important;color:var(--text-muted)!important;font-family:var(--font-mono)!important;font-size:11px!important;text-transform:uppercase!important;letter-spacing:.8px!important}
+    .tabulator .tabulator-header .tabulator-col:hover{background:var(--surface2)!important}
+    .tabulator .tabulator-header-filter input,.tabulator .tabulator-header-filter select{background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:4px!important;color:var(--text)!important;font-family:var(--font-body)!important;font-size:12px!important;padding:3px 6px!important;width:100%!important}
+    .tabulator .tabulator-header-filter input:focus,.tabulator .tabulator-header-filter select:focus{outline:none!important;border-color:var(--accent)!important}
+    .tabulator-row{background:var(--surface)!important;border-bottom:1px solid var(--border)!important;transition:background .1s}
+    .tabulator-row:hover{background:var(--surface2)!important}
+    .tabulator-row .tabulator-cell{border-right:1px solid var(--border)!important;color:var(--text)!important;font-size:13px!important;padding:9px 10px!important;vertical-align:middle!important}
+    .tabulator-row.row-applied{background:#111a28!important}
+    .tabulator-row.row-interviewing{background:#1c1800!important}
+    .tabulator-row.row-offer{background:#081c14!important}
+    .tabulator-row.row-rejected{background:#1c0810!important}
+    .tabulator-row.row-withdrawn{background:#141418!important}
+    .status-select{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 6px;width:100%;cursor:pointer;transition:border-color .15s}
+    .status-select:focus{outline:none;border-color:var(--accent)}
+    .status-select option{background:var(--surface2)}
+    .date-input{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 6px;width:100%;cursor:pointer}
+    .date-input:focus{outline:none;border-color:var(--accent)}
+    .date-input::-webkit-calendar-picker-indicator{filter:invert(.8);cursor:pointer}
+    .notes-input{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-body);font-size:12px;padding:3px 8px;width:100%;resize:none}
+    .notes-input:focus{outline:none;border-color:var(--accent)}
+    .apply-link{display:inline-block;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:5px;font-family:var(--font-mono);font-size:10px;padding:3px 9px;text-decoration:none;transition:all .15s;white-space:nowrap}
+    .apply-link:hover{background:var(--accent);color:var(--bg)}
+    .location-tag{font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:10px;white-space:nowrap}
+    .location-tag.remote{background:var(--accent-dim);color:var(--accent)}
+    .location-tag.local{background:#1a2a4a;color:var(--info)}
+    footer{padding:16px 32px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+    .error-banner{background:#3a1020;border:1px solid var(--danger);color:var(--danger);font-family:var(--font-mono);font-size:12px;padding:10px 32px;display:none}
+    .loading-bar{height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);background-size:200% 100%;animation:shimmer 1.2s infinite}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .btn-scrape{font-family:var(--font-mono);font-size:11px;padding:7px 16px;border-radius:6px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);cursor:pointer;letter-spacing:.3px;transition:all .15s;display:flex;align-items:center;gap:6px}
+    .btn-scrape:hover{background:var(--accent);color:var(--bg)}
+    .btn-scrape .scrape-icon{display:inline-block;transition:transform .3s}
+    .btn-scrape:hover .scrape-icon{transform:rotate(180deg)}
+    .btn-scrape.running{animation:pulse-border 1s infinite;pointer-events:none;opacity:.7}
+    @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(86,224,160,.4)}50%{box-shadow:0 0 0 5px rgba(86,224,160,0)}}
+    .scrape-status{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);display:none}
+    .scrape-status.show{display:inline}
   </style>
 </head>
 <body>
-
 <div class="loading-bar" id="loading-bar"></div>
-
 <header>
   <div class="logo">
     <span class="logo-title">// internship.tracker</span>
     <span class="logo-sub">Mason OH · 50mi + remote</span>
   </div>
-  <div class="status-bar" id="status-bar">
-    <!-- pills injected by JS -->
-  </div>
+  <div class="status-bar" id="status-bar"></div>
 </header>
-
 <div class="controls">
   <input class="search-box" id="global-search" type="text" placeholder="Search titles, companies, locations…" />
   <button class="btn" onclick="clearAllFilters()">clear filters</button>
@@ -432,50 +104,23 @@
   <span class="save-toast" id="save-toast">✔ saved</span>
   <span class="load-status" id="load-status">loading…</span>
 </div>
-
 <div class="error-banner" id="error-banner"></div>
-
 <div id="tracker-table"></div>
-
 <footer>
   <span id="row-count">— rows</span>
   <span>edits save instantly · data via Google Sheets</span>
 </footer>
-
-<!-- Tabulator JS -->
 <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
-
 <script>
-// ─── CONFIGURE THIS ───────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+// ─── CONFIGURE THIS ──────────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCxH_D3XFN9oqzROLwJ8oNZK9uM4ePkezY0E_QJi46G7oNLFkAFMDRR06zHd77XmVnUQ/exec";
 // ─────────────────────────────────────────────────────────────────────────────
 
-const STATUS_OPTIONS = [
-  "Not Applied", "Applied", "Interviewing", "Offer", "Rejected", "Withdrawn"
-];
+const STATUS_OPTIONS = ["Not Applied","Applied","Interviewing","Offer","Rejected","Withdrawn"];
+const STATUS_PILL_CLASS = {"Not Applied":"pill-not-applied","Applied":"pill-applied","Interviewing":"pill-interviewing","Offer":"pill-offer","Rejected":"pill-rejected","Withdrawn":"pill-withdrawn"};
+const ROW_CLASS = {"Applied":"row-applied","Interviewing":"row-interviewing","Offer":"row-offer","Rejected":"row-rejected","Withdrawn":"row-withdrawn"};
 
-const STATUS_PILL_CLASS = {
-  "Not Applied":  "pill-not-applied",
-  "Applied":      "pill-applied",
-  "Interviewing": "pill-interviewing",
-  "Offer":        "pill-offer",
-  "Rejected":     "pill-rejected",
-  "Withdrawn":    "pill-withdrawn",
-};
-
-const ROW_CLASS = {
-  "Applied":      "row-applied",
-  "Interviewing": "row-interviewing",
-  "Offer":        "row-offer",
-  "Rejected":     "row-rejected",
-  "Withdrawn":    "row-withdrawn",
-};
-
-let table = null;
-let allData = [];
-let activePillFilter = null;
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+let table = null, allData = [], activePillFilter = null;
 
 function showToast() {
   const t = document.getElementById("save-toast");
@@ -483,35 +128,60 @@ function showToast() {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove("show"), 1800);
 }
-
 function showError(msg) {
   const b = document.getElementById("error-banner");
   b.textContent = "⚠ " + msg;
   b.style.display = "block";
 }
+function setLoadStatus(msg) { document.getElementById("load-status").textContent = msg; }
 
-function setLoadStatus(msg) {
-  document.getElementById("load-status").textContent = msg;
+// ── appsGet: handles Apps Script redirect + CORS ──────────────────────────────
+// Apps Script 302-redirects to googleusercontent.com. We follow the redirect
+// and rely on the CORS headers now present in Code.gs (doGet/doPost both return
+// Access-Control-Allow-Origin: *). Cache-bust with timestamp param.
+async function appsGet() {
+  const res = await fetch(APPS_SCRIPT_URL + "?t=" + Date.now(), {
+    redirect: "follow",
+    cache:    "no-store",
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
 }
 
-// ── Fetch all rows from Apps Script ──────────────────────────────────────────
+// ── appsPost: POST with CORS headers (Code.gs handles preflight) ──────────────
+// Using Content-Type: text/plain avoids a preflight OPTIONS request, which
+// Apps Script doesn't support. This is the standard workaround.
+async function appsPost(payload) {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method:   "POST",
+      redirect: "follow",
+      headers:  { "Content-Type": "text/plain" },
+      body:     JSON.stringify(payload),
+    });
+    return res.ok ? { ok: true } : { ok: false };
+  } catch (_) {
+    // Fallback: fire-and-forget no-cors if CORS headers not yet deployed
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode:   "no-cors",
+      body:   JSON.stringify(payload),
+    });
+    return { ok: true };
+  }
+}
 
 async function loadData() {
   document.getElementById("loading-bar").style.display = "block";
   document.getElementById("error-banner").style.display = "none";
   setLoadStatus("loading…");
   try {
-    const res  = await fetch(APPS_SCRIPT_URL);
-    const json = await res.json();
+    const json = await appsGet();
     if (!json.ok) throw new Error(json.error);
     allData = json.rows;
-    if (table) {
-      table.replaceData(allData);
-    } else {
-      buildTable(allData);
-    }
+    if (table) { table.replaceData(allData); } else { buildTable(allData); }
     updatePills(allData);
-    setLoadStatus(`${allData.length} jobs · updated ${new Date().toLocaleTimeString()}`);
+    setLoadStatus(allData.length + " jobs · updated " + new Date().toLocaleTimeString());
   } catch (err) {
     showError("Could not load data: " + err.message);
     setLoadStatus("error");
@@ -520,301 +190,135 @@ async function loadData() {
   }
 }
 
-// ── Save a single field back to Apps Script ───────────────────────────────────
-
 async function saveField(url, field, value) {
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "update_field", url, field, value }),
-    });
+    await appsPost({ action: "update_field", url, field, value });
     showToast();
-    // Update local cache too
     const row = allData.find(r => r.url === url);
     if (row) row[field] = value;
-  } catch (err) {
-    showError("Save failed: " + err.message);
-  }
+  } catch (err) { showError("Save failed: " + err.message); }
 }
-
-// ── Status pill summary ───────────────────────────────────────────────────────
 
 function updatePills(data) {
   const counts = {};
   STATUS_OPTIONS.forEach(s => counts[s] = 0);
   data.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
-
-  const bar = document.getElementById("status-bar");
-  bar.innerHTML = STATUS_OPTIONS.map(s => `
-    <span class="pill ${STATUS_PILL_CLASS[s]} ${activePillFilter === s ? 'active' : ''}"
-          onclick="filterByStatus('${s}')">
-      ${s} <strong>${counts[s]}</strong>
-    </span>
-  `).join("");
+  document.getElementById("status-bar").innerHTML = STATUS_OPTIONS.map(s =>
+    `<span class="pill ${STATUS_PILL_CLASS[s]} ${activePillFilter===s?"active":""}" onclick="filterByStatus('${s}')">${s} <strong>${counts[s]}</strong></span>`
+  ).join("");
 }
 
 function filterByStatus(status) {
-  if (activePillFilter === status) {
-    activePillFilter = null;
-    table.clearFilter();
-  } else {
-    activePillFilter = status;
-    table.setFilter("status", "=", status);
-  }
-  updatePills(allData);
-  updateRowCount();
+  if (activePillFilter === status) { activePillFilter = null; table.clearFilter(); }
+  else { activePillFilter = status; table.setFilter("status", "=", status); }
+  updatePills(allData); updateRowCount();
 }
 
-// ── Global search ─────────────────────────────────────────────────────────────
-
-document.getElementById("global-search").addEventListener("input", function () {
+document.getElementById("global-search").addEventListener("input", function() {
   const q = this.value.trim();
-  if (!q) {
-    table.removeFilter("_search");
-  } else {
-    table.setFilter(row => {
-      const hay = [row.title, row.company, row.location, row.notes, row.description]
-                    .join(" ").toLowerCase();
-      return hay.includes(q.toLowerCase());
-    });
-  }
+  if (!q) { table.clearFilter(); }
+  else { table.setFilter(row => [row.title,row.company,row.location,row.notes,row.description].join(" ").toLowerCase().includes(q.toLowerCase())); }
   updateRowCount();
 });
 
 function clearAllFilters() {
-  activePillFilter = null;
-  table.clearFilter();
+  activePillFilter = null; table.clearFilter();
   document.getElementById("global-search").value = "";
-  updatePills(allData);
-  updateRowCount();
+  updatePills(allData); updateRowCount();
 }
 
 function updateRowCount() {
-  const visible = table ? table.getDataCount("active") : allData.length;
-  document.getElementById("row-count").textContent =
-    `${visible} of ${allData.length} jobs`;
+  const v = table ? table.getDataCount("active") : allData.length;
+  document.getElementById("row-count").textContent = v + " of " + allData.length + " jobs";
 }
-
-// ── Build Tabulator ───────────────────────────────────────────────────────────
 
 function buildTable(data) {
   table = new Tabulator("#tracker-table", {
-    data,
-    layout: "fitData",
-    height: "calc(100vh - 178px)",
-    rowFormatter: row => {
-      const cls = ROW_CLASS[row.getData().status];
-      if (cls) row.getElement().classList.add(cls);
-    },
+    data, layout: "fitData", height: "calc(100vh - 178px)",
+    rowFormatter: row => { const cls = ROW_CLASS[row.getData().status]; if (cls) row.getElement().classList.add(cls); },
     dataFiltered: () => updateRowCount(),
-
     columns: [
-
-      // ── Apply link ──────────────────────────────────────────────────────────
-      {
-        title: "", field: "url", width: 70, resizable: false,
-        headerFilter: false,
+      { title:"", field:"url", width:70, resizable:false, headerFilter:false,
+        formatter: cell => { const u=cell.getValue(); return u?`<a class="apply-link" href="${u}" target="_blank">apply →</a>`:""; }},
+      { title:"Status", field:"status", width:148, headerFilter:"select",
+        headerFilterParams:{values:["", ...STATUS_OPTIONS]},
+        sorter:(a,b) => STATUS_OPTIONS.indexOf(a)-STATUS_OPTIONS.indexOf(b),
         formatter: cell => {
-          const url = cell.getValue();
-          return url
-            ? `<a class="apply-link" href="${url}" target="_blank">apply →</a>`
-            : "";
-        },
-      },
-
-      // ── Status (editable dropdown) ──────────────────────────────────────────
-      {
-        title: "Status", field: "status", width: 148,
-        headerFilter: "select",
-        headerFilterParams: { values: ["", ...STATUS_OPTIONS] },
-        formatter: (cell) => {
-          const val = cell.getValue() || "Not Applied";
-          const url = cell.getRow().getData().url;
-          const opts = STATUS_OPTIONS.map(s =>
-            `<option value="${s}" ${s === val ? "selected" : ""}>${s}</option>`
-          ).join("");
+          const val=cell.getValue()||"Not Applied", url=cell.getRow().getData().url;
+          const opts=STATUS_OPTIONS.map(s=>`<option value="${s}" ${s===val?"selected":""}>${s}</option>`).join("");
           return `<select class="status-select" onchange="
-            this.closest('.tabulator-row').className = this.closest('.tabulator-row').className
-              .replace(/\\brow-\\S+/g,'');
-            const cls = {Applied:'row-applied',Interviewing:'row-interviewing',
-              Offer:'row-offer',Rejected:'row-rejected',Withdrawn:'row-withdrawn'}[this.value];
-            if(cls) this.closest('.tabulator-row').classList.add(cls);
+            this.closest('.tabulator-row').className=this.closest('.tabulator-row').className.replace(/\\brow-\\S+/g,'');
+            const c={Applied:'row-applied',Interviewing:'row-interviewing',Offer:'row-offer',Rejected:'row-rejected',Withdrawn:'row-withdrawn'}[this.value];
+            if(c)this.closest('.tabulator-row').classList.add(c);
             saveField('${url}','status',this.value);
-          ">${opts}</select>`;
-        },
-        sorter: (a, b) => STATUS_OPTIONS.indexOf(a) - STATUS_OPTIONS.indexOf(b),
-      },
-
-      // ── Title ───────────────────────────────────────────────────────────────
-      {
-        title: "Title", field: "title", minWidth: 180,
-        headerFilter: "input",
-        formatter: cell => `<strong style="color:var(--text)">${cell.getValue()}</strong>`,
-      },
-
-      // ── Company ─────────────────────────────────────────────────────────────
-      {
-        title: "Company", field: "company", minWidth: 140,
-        headerFilter: "input",
-      },
-
-      // ── Location ────────────────────────────────────────────────────────────
-      {
-        title: "Location", field: "location", minWidth: 130,
-        headerFilter: "input",
+          ">${opts}</select>`; }},
+      { title:"Title", field:"title", minWidth:180, headerFilter:"input",
+        formatter: cell => `<strong style="color:var(--text)">${cell.getValue()}</strong>`},
+      { title:"Company", field:"company", minWidth:140, headerFilter:"input" },
+      { title:"Location", field:"location", minWidth:130, headerFilter:"input",
         formatter: cell => {
-          const v = cell.getValue() || "";
-          const isRemote = v.includes("🌐");
-          const clean    = v.replace(/^(📍|🌐)\s*\|\s*/, "");
-          const tag      = isRemote
-            ? `<span class="location-tag remote">remote</span>`
-            : `<span class="location-tag local">local</span>`;
-          return `${tag} <span style="font-size:11px;color:var(--text-muted)">${clean}</span>`;
-        },
-      },
-
-      // ── Posted ──────────────────────────────────────────────────────────────
-      {
-        title: "Posted", field: "posted", width: 105,
-        headerFilter: "input",
-        sorter: "date", sorterParams: { format: "MMM DD, YYYY" },
-        formatter: cell => `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${cell.getValue()}</span>`,
-      },
-
-      // ── Salary ──────────────────────────────────────────────────────────────
-      {
-        title: "Salary", field: "salary", width: 140,
-        headerFilter: "input",
-        formatter: cell => {
-          const v = cell.getValue();
-          return v && v !== "Not listed"
-            ? `<span style="color:var(--accent);font-family:var(--font-mono);font-size:11px">${v}</span>`
-            : `<span style="color:var(--text-muted);font-size:11px">—</span>`;
-        },
-      },
-
-      // ── Date Applied (editable date) ─────────────────────────────────────────
-      {
-        title: "Applied", field: "date_applied", width: 128,
-        headerFilter: "input",
-        formatter: cell => {
-          const val = cell.getValue() || "";
-          const url = cell.getRow().getData().url;
-          return `<input class="date-input" type="date" value="${val}"
-            onchange="saveField('${url}','date_applied',this.value)" />`;
-        },
-      },
-
-      // ── Date Followed Up (editable date) ─────────────────────────────────────
-      {
-        title: "Followed Up", field: "date_followup", width: 128,
-        headerFilter: "input",
-        formatter: cell => {
-          const val = cell.getValue() || "";
-          const url = cell.getRow().getData().url;
-          return `<input class="date-input" type="date" value="${val}"
-            onchange="saveField('${url}','date_followup',this.value)" />`;
-        },
-      },
-
-      // ── Notes (editable text) ────────────────────────────────────────────────
-      {
-        title: "Notes", field: "notes", minWidth: 180,
-        headerFilter: "input",
-        formatter: cell => {
-          const val = (cell.getValue() || "").replace(/"/g, "&quot;");
-          const url = cell.getRow().getData().url;
-          return `<input class="notes-input" type="text" value="${val}" placeholder="add notes…"
-            onchange="saveField('${url}','notes',this.value)" />`;
-        },
-      },
-
-    ], // end columns
-  }); // end Tabulator
-
+          const v=cell.getValue()||"", isR=v.includes("🌐"), clean=v.replace(/^(📍|🌐)\s*\|\s*/,"");
+          const tag=isR?`<span class="location-tag remote">remote</span>`:`<span class="location-tag local">local</span>`;
+          return `${tag} <span style="font-size:11px;color:var(--text-muted)">${clean}</span>`; }},
+      { title:"Posted", field:"posted", width:105, headerFilter:"input",
+        sorter:"date", sorterParams:{format:"MMM DD, YYYY"},
+        formatter: cell => `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${cell.getValue()}</span>`},
+      { title:"Salary", field:"salary", width:140, headerFilter:"input",
+        formatter: cell => { const v=cell.getValue();
+          return v&&v!=="Not listed"?`<span style="color:var(--accent);font-family:var(--font-mono);font-size:11px">${v}</span>`:`<span style="color:var(--text-muted);font-size:11px">—</span>`; }},
+      { title:"Applied", field:"date_applied", width:128, headerFilter:"input",
+        formatter: cell => { const val=cell.getValue()||"", url=cell.getRow().getData().url;
+          return `<input class="date-input" type="date" value="${val}" onchange="saveField('${url}','date_applied',this.value)"/>`; }},
+      { title:"Followed Up", field:"date_followup", width:128, headerFilter:"input",
+        formatter: cell => { const val=cell.getValue()||"", url=cell.getRow().getData().url;
+          return `<input class="date-input" type="date" value="${val}" onchange="saveField('${url}','date_followup',this.value)"/>`; }},
+      { title:"Notes", field:"notes", minWidth:180, headerFilter:"input",
+        formatter: cell => { const val=(cell.getValue()||"").replace(/"/g,"&quot;"), url=cell.getRow().getData().url;
+          return `<input class="notes-input" type="text" value="${val}" placeholder="add notes…" onchange="saveField('${url}','notes',this.value)"/>`; }},
+    ],
+  });
   updateRowCount();
 }
 
-// ── Scrape new jobs (opens Colab, auto-runs all cells) ───────────────────────
-//
-// HOW IT WORKS
-// ────────────
-// 1. Button opens your notebook via a GitHub Colab URL with #autorun=1 in the hash
-// 2. A snippet at the top of the notebook detects that flag and calls
-//    Runtime → Run all automatically
-// 3. Colab scrapes fresh jobs, POSTs them to Apps Script, updates the Sheet
-// 4. After ~5 min, click "↺ refresh" on this page (or it auto-refreshes below)
-//
-// You must be logged into Google in the same browser for Colab to open properly.
-
+// ── Scrape new jobs ───────────────────────────────────────────────────────────
 const COLAB_NOTEBOOK_URL =
-  "https://colab.research.google.com/github/jeffatenn/internship-tracker/" +
-  "blob/main/internship_search.ipynb#autorun=1";
+  "https://colab.research.google.com/github/jeffatenn/internship-tracker/blob/main/internship_search.ipynb#autorun=1";
 
 function scrapeJobs() {
-  const btn    = document.getElementById("scrape-btn");
-  const status = document.getElementById("scrape-status");
-
-  // Open Colab in a new tab — it will auto-run because of #autorun=1
+  const btn=document.getElementById("scrape-btn"), status=document.getElementById("scrape-status");
   window.open(COLAB_NOTEBOOK_URL, "_blank");
-
-  // Visual feedback on the button
   btn.classList.add("running");
-  btn.querySelector(".scrape-icon").textContent = "…";
-
-  status.textContent = "⏳ Colab opened — running (~5 min). Page will auto-refresh when done.";
+  btn.querySelector(".scrape-icon").textContent="…";
+  status.textContent="⏳ Colab opened — running (~5 min). Page will auto-refresh when done.";
   status.classList.add("show");
-
-  // Poll the Sheet every 30s for up to 10 min.
-  // When the row count increases, Colab has finished — reload the table.
-  const startCount = allData.length;
-  const startTime  = Date.now();
-  const MAX_WAIT   = 10 * 60 * 1000;   // 10 minutes
-  const POLL_MS    = 30_000;            // check every 30 seconds
-
-  const poll = setInterval(async () => {
-    const elapsed = Date.now() - startTime;
-
-    if (elapsed > MAX_WAIT) {
-      clearInterval(poll);
-      resetScrapeBtn("⚠ Timed out — click ↺ refresh manually.");
-      return;
-    }
-
+  const startCount=allData.length, startTime=Date.now(), MAX_WAIT=10*60*1000, POLL_MS=30000;
+  const poll=setInterval(async()=>{
+    const elapsed=Date.now()-startTime;
+    if(elapsed>MAX_WAIT){clearInterval(poll);resetScrapeBtn("⚠ Timed out — click ↺ refresh manually.");return;}
     try {
-      const res  = await fetch(APPS_SCRIPT_URL);
-      const json = await res.json();
-      if (json.ok && json.rows.length > startCount) {
-        clearInterval(poll);
-        allData = json.rows;
-        if (table) table.replaceData(allData);
-        updatePills(allData);
-        updateRowCount();
-        setLoadStatus(`${allData.length} jobs · updated ${new Date().toLocaleTimeString()}`);
-        resetScrapeBtn(`✔ Done — ${json.rows.length - startCount} new jobs added.`);
+      const json=await appsGet();
+      if(json.ok&&json.rows.length>startCount){
+        clearInterval(poll);allData=json.rows;
+        if(table)table.replaceData(allData);
+        updatePills(allData);updateRowCount();
+        setLoadStatus(allData.length+" jobs · updated "+new Date().toLocaleTimeString());
+        resetScrapeBtn("✔ Done — "+(json.rows.length-startCount)+" new jobs added.");
       } else {
-        const mins = Math.floor(elapsed / 60000);
-        const secs = Math.floor((elapsed % 60000) / 1000);
-        status.textContent =
-          `⏳ Waiting for Colab… ${mins}m${secs.toString().padStart(2,"0")}s elapsed`;
+        const m=Math.floor(elapsed/60000),s=Math.floor((elapsed%60000)/1000);
+        status.textContent="⏳ Waiting for Colab… "+m+"m"+s.toString().padStart(2,"0")+"s elapsed";
       }
-    } catch (_) { /* network blip — keep polling */ }
+    } catch(_){}
   }, POLL_MS);
 }
 
 function resetScrapeBtn(message) {
-  const btn    = document.getElementById("scrape-btn");
-  const status = document.getElementById("scrape-status");
+  const btn=document.getElementById("scrape-btn"), status=document.getElementById("scrape-status");
   btn.classList.remove("running");
-  btn.querySelector(".scrape-icon").textContent = "⟳";
-  status.textContent = message;
-  setTimeout(() => {
-    status.classList.remove("show");
-    status.textContent = "";
-  }, 8000);
+  btn.querySelector(".scrape-icon").textContent="⟳";
+  status.textContent=message;
+  setTimeout(()=>{status.classList.remove("show");status.textContent="";},8000);
 }
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
 loadData();
 </script>
 </body>
