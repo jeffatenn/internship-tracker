@@ -358,6 +358,53 @@
       0%   { background-position: -200% 0; }
       100% { background-position:  200% 0; }
     }
+
+    /* ── Scrape button ── */
+    .btn-scrape {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-scrape:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-scrape .scrape-icon {
+      display: inline-block;
+      transition: transform 0.3s;
+    }
+    .btn-scrape:hover .scrape-icon {
+      transform: rotate(180deg);
+    }
+    /* pulse ring when scraping is in progress */
+    .btn-scrape.running {
+      animation: pulse-border 1s infinite;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(86,224,160,0.4); }
+      50%       { box-shadow: 0 0 0 5px rgba(86,224,160,0); }
+    }
+
+    /* ── Scrape status message ── */
+    .scrape-status {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      display: none;
+    }
+    .scrape-status.show { display: inline; }
   </style>
 </head>
 <body>
@@ -378,6 +425,10 @@
   <input class="search-box" id="global-search" type="text" placeholder="Search titles, companies, locations…" />
   <button class="btn" onclick="clearAllFilters()">clear filters</button>
   <button class="btn primary" onclick="loadData()">↺ refresh</button>
+  <button class="btn-scrape" id="scrape-btn" onclick="scrapeJobs()">
+    <span class="scrape-icon">⟳</span> scrape new jobs
+  </button>
+  <span class="scrape-status" id="scrape-status"></span>
   <span class="save-toast" id="save-toast">✔ saved</span>
   <span class="load-status" id="load-status">loading…</span>
 </div>
@@ -396,7 +447,7 @@
 
 <script>
 // ─── CONFIGURE THIS ───────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywLKOToK9poqGHQYLcEHfuNTocO8mjRESQ_9541Dg7h5jcC973m2VEpsUTOPwUPjBdww/exec";
+const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS = [
@@ -682,6 +733,85 @@ function buildTable(data) {
   }); // end Tabulator
 
   updateRowCount();
+}
+
+// ── Scrape new jobs (opens Colab, auto-runs all cells) ───────────────────────
+//
+// HOW IT WORKS
+// ────────────
+// 1. Button opens your notebook via a GitHub Colab URL with #autorun=1 in the hash
+// 2. A snippet at the top of the notebook detects that flag and calls
+//    Runtime → Run all automatically
+// 3. Colab scrapes fresh jobs, POSTs them to Apps Script, updates the Sheet
+// 4. After ~5 min, click "↺ refresh" on this page (or it auto-refreshes below)
+//
+// You must be logged into Google in the same browser for Colab to open properly.
+
+const COLAB_NOTEBOOK_URL =
+  "https://colab.research.google.com/github/jeffatenn/internship-tracker/" +
+  "blob/main/internship_search.ipynb#autorun=1";
+
+function scrapeJobs() {
+  const btn    = document.getElementById("scrape-btn");
+  const status = document.getElementById("scrape-status");
+
+  // Open Colab in a new tab — it will auto-run because of #autorun=1
+  window.open(COLAB_NOTEBOOK_URL, "_blank");
+
+  // Visual feedback on the button
+  btn.classList.add("running");
+  btn.querySelector(".scrape-icon").textContent = "…";
+
+  status.textContent = "⏳ Colab opened — running (~5 min). Page will auto-refresh when done.";
+  status.classList.add("show");
+
+  // Poll the Sheet every 30s for up to 10 min.
+  // When the row count increases, Colab has finished — reload the table.
+  const startCount = allData.length;
+  const startTime  = Date.now();
+  const MAX_WAIT   = 10 * 60 * 1000;   // 10 minutes
+  const POLL_MS    = 30_000;            // check every 30 seconds
+
+  const poll = setInterval(async () => {
+    const elapsed = Date.now() - startTime;
+
+    if (elapsed > MAX_WAIT) {
+      clearInterval(poll);
+      resetScrapeBtn("⚠ Timed out — click ↺ refresh manually.");
+      return;
+    }
+
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL);
+      const json = await res.json();
+      if (json.ok && json.rows.length > startCount) {
+        clearInterval(poll);
+        allData = json.rows;
+        if (table) table.replaceData(allData);
+        updatePills(allData);
+        updateRowCount();
+        setLoadStatus(`${allData.length} jobs · updated ${new Date().toLocaleTimeString()}`);
+        resetScrapeBtn(`✔ Done — ${json.rows.length - startCount} new jobs added.`);
+      } else {
+        const mins = Math.floor(elapsed / 60000);
+        const secs = Math.floor((elapsed % 60000) / 1000);
+        status.textContent =
+          `⏳ Waiting for Colab… ${mins}m${secs.toString().padStart(2,"0")}s elapsed`;
+      }
+    } catch (_) { /* network blip — keep polling */ }
+  }, POLL_MS);
+}
+
+function resetScrapeBtn(message) {
+  const btn    = document.getElementById("scrape-btn");
+  const status = document.getElementById("scrape-status");
+  btn.classList.remove("running");
+  btn.querySelector(".scrape-icon").textContent = "⟳";
+  status.textContent = message;
+  setTimeout(() => {
+    status.classList.remove("show");
+    status.textContent = "";
+  }, 8000);
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
